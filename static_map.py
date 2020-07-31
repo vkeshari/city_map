@@ -120,4 +120,4 @@ for l in top_labels:
   chart_ax.annotate(l, xy=(0, l))
 
 plt.show()
-#plt.savefig('data/2011_map.png')
+plt.savefig('data/' + str(t) + '_map.png')
