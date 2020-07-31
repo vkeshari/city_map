@@ -28,15 +28,23 @@ def pretty_number(n):
     ns = str(pop)
   return ns
 
-def pretty_text(pop, name):
+def pretty_name(name):
   if name.strip().endswith("U A"):
     name = name.strip()[:-4].strip()
   elif name.strip().endswith("UA"):
     name = name.strip[:-3].strip()
   else:
     name = name.strip()
-  s = name + ' ' + '(' + pretty_number(pop) + ')'
-  return s
+
+  if name == 'Greater Mumbai':
+    name = 'Mumbai'
+  if name == 'Bruhat Bangalore':
+    name = 'Bengaluru'
+
+  return name
+
+def pretty_text(pop, name):
+  return pretty_name(name) + ' ' + '(' + pretty_number(pop) + ')'
 
 cities = {}
 for p in pops[1:]:
@@ -62,27 +70,42 @@ for c in cities:
   lats.append(cities[c]['lat'])
   longs.append(cities[c]['long'])
 
+num_chart_cities = 30
+map_pop_limit = 100000
+label_pop_limit = 200000
+max_labels = 12
+
 def draw_for_date(t):
   fig.clear()
   pops = [interpolate.splev(t, cities[n]['pop'], der=0) for n in names]
 
-  top_cities = sorted(zip(pops, names, colors))[-25:]
+  top_cities = sorted(zip(pops, names, colors))[-num_chart_cities:]
   top_names = [n for _, n, _ in top_cities]
   top_pops = [p for p, _, _ in top_cities]
   top_colors = [c for _, _, c in top_cities]
   top_labels = [pretty_text(p, n) for p, n, _ in top_cities]
 
+  show_cities = [(p, n, c, la, lo) for (p, n, c, la, lo) in sorted(zip(pops, names, colors, lats, longs)) if p >= map_pop_limit]
+  show_pops = [p for p, _, _, _, _ in show_cities]
+  show_colors = [c for _, _, c, _, _ in show_cities]
+  show_lats = [la for _, _, _, la, _ in show_cities]
+  show_longs = [lo for _, _, _, _, lo in show_cities]
+
+  label_cities = [(p, n, c, la, lo) for (p, n, c, la, lo) in show_cities if p >= label_pop_limit][-min(len(show_cities), max_labels):]
+
   map_ax = fig.add_subplot(121)
-  map_ax.set_title("Map of Largest Cities " + "(" + str(int(t)) + ")")
+  map_ax.set_title("Map of Cities with Pop. > " + pretty_number(map_pop_limit) + " " +  "(" + str(int(t)) + ")")
   m = basemap.Basemap(projection='aeqd', resolution='l',
                       lat_0=20, lon_0=80,
                       llcrnrlat=5, llcrnrlon=68, urcrnrlat=35, urcrnrlon=100)
-  m.drawlsmask(land_color='white', ocean_color='aqua');
+  m.drawlsmask(land_color='white', ocean_color='lightskyblue');
   m.drawcountries(linewidth=0.5)
-  m.scatter(longs, lats, latlon=True, s=[p/50000 for p in pops], alpha=0.5, c=colors)
+  m.scatter(show_longs, show_lats, latlon=True, s=[p/50000 for p in show_pops], alpha=0.5, c=show_colors)
+  for _, n, _, la, lo in label_cities:
+    map_ax.annotate(pretty_name(n), xy = m(lo + 0.5, la - 0.15))
 
   chart_ax = fig.add_subplot(122)
-  chart_ax.set_title("25 Largest Cities")
+  chart_ax.set_title(str(num_chart_cities) + " Largest Cities")
   chart_ax.spines['right'].set_color('none')
   chart_ax.spines['left'].set_color('none')
   chart_ax.spines['top'].set_color('none')
@@ -97,12 +120,17 @@ def draw_for_date(t):
 
   plt.draw()
 
-FILE_NAME = 'animated.mp4'
-fig = plt.figure(figsize=(19.2,10.8))
+start_year = 1901
+end_year = 2012
+interval = 0.01
+
+file_name = 'output/animated_' + str(start_year) + '_' + str(end_year) + '.mp4'
+
+fig = plt.figure(figsize=(19.2,10.8), tight_layout=True)
 
 writer = animation.FFMpegWriter(fps=60, bitrate=5000)
-with writer.saving(fig, FILE_NAME, dpi=100):
-  for t in np.arange(1901, 2012, 0.01):
+with writer.saving(fig, file_name, dpi=100):
+  for t in np.arange(start_year, end_year, interval):
     print (str(t))
     draw_for_date(t)
     writer.grab_frame()
