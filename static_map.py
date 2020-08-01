@@ -99,7 +99,19 @@ def build_plot_data(cities):
 
 names, pop_fns, lats, longs, colors = build_plot_data(cities)
 
-def plot_chart(fig, t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors, save_img, in_animation):
+def plot_chart(fig, t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors, compress_pops, save_img, in_animation):
+  assert t >= 1901, "t (year) must be >= 1901"
+  assert t < 2012, "t (year) must be < 2012"
+
+  assert num_top_cities >= 10, "num_top_cities must be >= 10"
+  assert num_top_cities <= 50, "num_top_cities must be <= 50"
+
+  assert pop_limit >= 100000, "pop_limit must be >= 1,00,000"
+  assert pop_limit <= 20000000, "pop_limit must be <= 2,00,00,000"
+  
+  if in_animation:
+    assert not save_img, "save_img cannot be True if in_animation is True"
+
   if in_animation:
     fig.clear()
 
@@ -171,6 +183,8 @@ def plot_chart(fig, t, num_top_cities, pop_limit, names, pop_fns, lats, longs, c
   chart_ax.yaxis.set_major_locator(ticker.NullLocator())
   chart_ax.xaxis.set_major_formatter(ticker.NullFormatter())
   chart_ax.xaxis.set_major_formatter(ticker.NullFormatter())
+  if compress_pops:
+    chart_ax.set_xlim(0, 20000000)
   chart_ax.barh(top_labels, top_pops, alpha = 0.5, color=top_colors)
   for l in top_labels:
     chart_ax.annotate(l, xy=(0.1, l), va = 'center', size = chart_text_size)
@@ -192,5 +206,5 @@ save_img = False
 # Plots
 fig = plt.figure(figsize=(19.2,10.8), tight_layout=True)
 
-plot_chart(fig, t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors, save_img, in_animation = False)
+plot_chart(fig, t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors, compress_pops = False, save_img = save_img, in_animation = False)
 
