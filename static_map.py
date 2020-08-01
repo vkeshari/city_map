@@ -99,7 +99,10 @@ def build_plot_data(cities):
 
 names, pop_fns, lats, longs, colors = build_plot_data(cities)
 
-def plot_chart(t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors, save_img):
+def plot_chart(fig, t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors, save_img, in_animation):
+  if in_animation:
+    fig.clear()
+
   map_pop_limit = pop_limit
   label_pop_limit = pop_limit
   max_labels = num_top_cities
@@ -107,9 +110,6 @@ def plot_chart(t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors
 
   chart_text_size = 22.5 - 0.25 * num_chart_cities
   map_text_size = 22.5 - 0.25 * max_labels
-
-  # Plots
-  fig = plt.figure(figsize=(19.2,10.8), tight_layout=True)
 
   # Population at time t
   pops = [interpolate.splev(t, pop_fn, der=0) for pop_fn in pop_fns]
@@ -175,10 +175,13 @@ def plot_chart(t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors
   for l in top_labels:
     chart_ax.annotate(l, xy=(0.1, l), va = 'center', size = chart_text_size)
 
-  if save_img:
-    plt.savefig('output/' + 'map_' + str(num_top_cities) + '_' + str(t) + '.png')
+  if in_animation:
+    plt.draw()
   else:
-    plt.show()
+    if save_img:
+      plt.savefig('output/' + 'map_' + str(num_top_cities) + '_' + str(t) + '.png')
+    else:
+      plt.show()
 
 # Plot parameters
 t = 2011
@@ -186,5 +189,8 @@ pop_limit = 100000
 num_top_cities = 50
 save_img = False
 
-plot_chart(t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors, save_img)
+# Plots
+fig = plt.figure(figsize=(19.2,10.8), tight_layout=True)
+
+plot_chart(fig, t, num_top_cities, pop_limit, names, pop_fns, lats, longs, colors, save_img, in_animation = False)
 
