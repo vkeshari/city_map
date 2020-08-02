@@ -1,8 +1,7 @@
 from matplotlib import pyplot as plt
 
-from static_map import left_align, high_align, low_align
-from static_map import pretty_number, pretty_name, pretty_text
-from static_map import build_city_data, build_plot_data, plot_chart
+from build_data import build_city_data, build_plot_data
+from plot_data import plot_chart
 
 cities = build_city_data()
 
