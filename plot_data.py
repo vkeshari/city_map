@@ -16,7 +16,7 @@ def pretty_number(n):
   elif th >= 1.0:
     ns = "{:.2f}".format(th) + ' th'
   else:
-    ns = str(pop)
+    ns = str(n)
   return ns
 
 def pretty_name(name):
